@@ -2,28 +2,33 @@ import os
 import logging
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from backend.config import settings
 
 logger = logging.getLogger("database")
 
-db_url = settings.DATABASE_URL
-# Guard against DATABASE_URL set to empty string in env (os.getenv returns "" not the default)
-if not db_url or not db_url.strip():
-    logger.warning("DATABASE_URL is empty — falling back to default SQLite database.")
-    db_url = "sqlite:///./social_growth.db"
-if db_url.startswith("postgres://"):
-    # Fix for SQLAlchemy 1.4+ compatibility with Supabase/Heroku postgres URLs
-    db_url = db_url.replace("postgres://", "postgresql://", 1)
+# --- Determine the database URL ---
+# On Vercel/Lambda: always use SQLite in /tmp (bypasses all env var parsing issues)
+_is_serverless = bool(os.getenv("VERCEL")) or bool(os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
 
-connect_args = {}
-if os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME"):
-    if "sqlite" in db_url and not db_url.startswith("sqlite:////tmp"):
-        db_url = "sqlite:////tmp/facebook_crm.db"
+if _is_serverless:
+    db_url = "sqlite:////tmp/facebook_crm.db"
+    logger.info("Serverless environment: using SQLite at /tmp/facebook_crm.db")
+else:
+    # Local / self-hosted: read from environment
+    _raw_url = os.getenv("DATABASE_URL", "").strip().strip('"').strip("'")
+    if not _raw_url:
+        _raw_url = "sqlite:///./social_growth.db"
+    # Fix legacy postgres:// URLs for SQLAlchemy 2.x
+    if _raw_url.startswith("postgres://"):
+        _raw_url = _raw_url.replace("postgres://", "postgresql://", 1)
+    # Fix aiosqlite URLs
+    if "sqlite+aiosqlite:///" in _raw_url:
+        _raw_url = _raw_url.replace("sqlite+aiosqlite:///", "sqlite:///")
+    db_url = _raw_url
 
-if "sqlite" in db_url:
-    db_url = db_url.replace("sqlite+aiosqlite:///", "sqlite:///")
-    connect_args = {"check_same_thread": False}
+# --- Set SQLite connect args ---
+connect_args = {"check_same_thread": False} if "sqlite" in db_url else {}
 
+# --- Create the engine ---
 engine = create_engine(
     db_url,
     echo=False,
@@ -45,17 +50,15 @@ def init_db():
     global _db_initialized
     if not _db_initialized:
         if "sqlite" in db_url:
-            # Always auto-create SQLite tables (SQLite is ephemeral on Vercel /tmp anyway)
-            logger.info("SQLite database: automatically ensuring all tables exist.")
+            logger.info("SQLite: auto-creating all tables.")
             try:
                 Base.metadata.create_all(bind=engine)
-                logger.info("SQLite tables created/verified successfully.")
+                logger.info("SQLite tables created/verified OK.")
             except Exception as e:
                 logger.error(f"Error creating SQLite tables: {e}")
                 raise e
         else:
-            # For PostgreSQL / real production DBs, rely on Alembic migrations
-            logger.info("Non-SQLite database detected: skipping auto table creation. Use Alembic migrations.")
+            logger.info("Non-SQLite DB: skipping auto table creation — use Alembic migrations.")
         _db_initialized = True
 
 def get_db():
