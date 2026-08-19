@@ -1,44 +1,12 @@
 {
   "version": 2,
-  "functions": {
-    "backend/main.py": {
-      "runtime": "@vercel/python",
-      "maxDuration": 30
-    }
-  },
-  "routes": [
-    {
-      "src": "/static/(.*)",
-      "dest": "/frontend/$1"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "backend/main.py"
-    },
-    {
-      "src": "/(dashboard|posts|analytics|pages|settings|onboarding|landing|overview)",
-      "dest": "backend/main.py"
-    },
-    {
-      "src": "/auth/(.*)",
-      "dest": "backend/main.py"
-    },
-    {
-      "src": "/",
-      "dest": "backend/main.py"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "backend/main.py"
-    }
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api/index" }
   ],
   "crons": [
     {
       "path": "/api/setup/cron-tick",
       "schedule": "0 0 * * *"
     }
-  ],
-  "env": {
-    "PYTHONPATH": "."
-  }
+  ]
 }
