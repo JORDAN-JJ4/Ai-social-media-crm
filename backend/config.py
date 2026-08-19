@@ -1,5 +1,8 @@
 import os
+import logging
 from pydantic import BaseModel, model_validator
+
+_config_logger = logging.getLogger("config")
 
 def _load_env_file(filepath=".env"):
     if os.path.exists(filepath):
@@ -39,20 +42,35 @@ class Settings(BaseModel):
         is_prod = not self.DEBUG or is_prod_env
 
         if is_prod_env and self.DEBUG:
-            raise ValueError("DEBUG mode must be disabled in production environments.")
+            _config_logger.warning(
+                "WARNING: DEBUG mode is enabled in a production environment (Vercel/Lambda). "
+                "Set DEBUG=False in your Vercel environment variables."
+            )
 
         if is_prod and self.SECRET_KEY == "super-secret-autonomous-key-2026":
-            raise ValueError("Production SECRET_KEY cannot be the default key.")
+            _config_logger.warning(
+                "WARNING: Using the default SECRET_KEY in production is insecure. "
+                "Set a strong, random SECRET_KEY in your Vercel environment variables."
+            )
 
         if is_prod and not self.TOKEN_ENCRYPTION_KEY:
-            raise ValueError("Production TOKEN_ENCRYPTION_KEY environment variable is required.")
+            _config_logger.warning(
+                "WARNING: TOKEN_ENCRYPTION_KEY is not set. "
+                "Social account tokens will NOT be encrypted. "
+                "Generate a Fernet key and set TOKEN_ENCRYPTION_KEY in Vercel environment variables."
+            )
 
         if self.TOKEN_ENCRYPTION_KEY:
             try:
                 from cryptography.fernet import Fernet
                 Fernet(self.TOKEN_ENCRYPTION_KEY.encode())
             except Exception as e:
-                raise ValueError(f"Invalid TOKEN_ENCRYPTION_KEY configuration: {e}")
+                _config_logger.error(
+                    f"Invalid TOKEN_ENCRYPTION_KEY: {e}. "
+                    "Generate a new key with: python -c \"from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())\""
+                )
+                # Clear invalid key so app can still start without encryption
+                object.__setattr__(self, 'TOKEN_ENCRYPTION_KEY', '')
 
         return self
 

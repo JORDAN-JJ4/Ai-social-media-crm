@@ -97,11 +97,24 @@ app.include_router(analytics.router)
 app.include_router(agents.router)
 app.include_router(logs.router)
 
-# Mount Frontend static files
+# Mount Frontend static files (local dev only; Vercel CDN serves /static/ directly in production)
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 frontend_dir = os.path.join(base_dir, "frontend")
-if os.path.exists(frontend_dir):
+
+# Fallback: try relative to cwd if the computed path doesn't exist
+if not os.path.exists(frontend_dir):
+    cwd_frontend = os.path.join(os.getcwd(), "frontend")
+    if os.path.exists(cwd_frontend):
+        frontend_dir = cwd_frontend
+
+if os.path.exists(frontend_dir) and not os.getenv("VERCEL"):
     app.mount("/static", StaticFiles(directory=frontend_dir), name="static")
+elif os.path.exists(frontend_dir):
+    # On Vercel, still mount for fallback but Vercel CDN takes priority via routes
+    try:
+        app.mount("/static", StaticFiles(directory=frontend_dir), name="static")
+    except Exception:
+        pass
 
 @app.get("/")
 @app.get("/landing")
