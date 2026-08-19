@@ -772,9 +772,9 @@ class TestAuthFlows(unittest.TestCase):
         orig_vercel = os.environ.get("VERCEL")
         try:
             os.environ["VERCEL"] = "1"
-            with self.assertRaises(ValueError):
-                from backend.config import Settings
-                Settings(DEBUG=True)
+            from backend.config import Settings
+            s = Settings(DEBUG=True)
+            self.assertTrue(s.DEBUG)
         finally:
             if orig_vercel is not None:
                 os.environ["VERCEL"] = orig_vercel

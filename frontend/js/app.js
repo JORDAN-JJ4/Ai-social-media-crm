@@ -155,17 +155,67 @@ async function checkCurrentUser() {
             if (data && data.email) {
                 currentUser = data;
                 updateUserUI(currentUser);
+                checkFacebookConfig();
             } else {
                 currentUser = null;
                 updateUserUI(null);
+                handleUnauthenticated();
             }
         } else {
             currentUser = null;
             updateUserUI(null);
+            handleUnauthenticated();
         }
     } catch (err) {
         currentUser = null;
         updateUserUI(null);
+        handleUnauthenticated();
+    }
+}
+
+function handleUnauthenticated() {
+    const path = window.location.pathname;
+    const publicPaths = ['/', '/landing', '/index.html'];
+    if (!publicPaths.includes(path)) {
+        openAuthModal('login');
+    }
+}
+
+async function checkFacebookConfig() {
+    const path = window.location.pathname;
+    if (path !== '/onboarding' && path !== '/settings') return;
+
+    try {
+        const res = await fetch('/api/setup/env');
+        if (res.ok) {
+            const data = await res.json();
+            if (!data.facebook_app_id || !data.has_app_secret) {
+                const fbBox = document.querySelector('.fb-connect-box');
+                if (fbBox) {
+                    let warningDiv = document.getElementById('fb-config-warning');
+                    if (!warningDiv) {
+                        warningDiv = document.createElement('div');
+                        warningDiv.id = 'fb-config-warning';
+                        warningDiv.style.backgroundColor = '#7f1d1d';
+                        warningDiv.style.color = '#fecaca';
+                        warningDiv.style.padding = '12px';
+                        warningDiv.style.borderRadius = '8px';
+                        warningDiv.style.marginTop = '12px';
+                        warningDiv.style.border = '1px solid #dc2626';
+                        warningDiv.style.fontSize = '14px';
+                        warningDiv.style.lineHeight = '1.4';
+                        warningDiv.innerHTML = `
+                            <strong>⚠️ Facebook Integration Unconfigured:</strong><br>
+                            Your Vercel environment variables are missing FACEBOOK_APP_ID or FACEBOOK_CLIENT_SECRET. 
+                            Please configure these in your Vercel project settings, otherwise Facebook login will not function.
+                        `;
+                        fbBox.appendChild(warningDiv);
+                    }
+                }
+            }
+        }
+    } catch (err) {
+        console.error("Failed to check FB config status:", err);
     }
 }
 
@@ -431,6 +481,11 @@ function setupEventListeners() {
     connectButtons.forEach(btn => {
         if (btn) {
             btn.addEventListener('click', async () => {
+                if (!currentUser) {
+                    alert("Please sign in or create an account first to connect your Facebook page.");
+                    openAuthModal('login');
+                    return;
+                }
                 try {
                     const res = await fetch('/api/setup/facebook/login_url');
                     const data = await res.json();

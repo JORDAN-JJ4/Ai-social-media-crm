@@ -3,6 +3,7 @@ import asyncio
 import urllib.parse
 import httpx
 import logging
+import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Cookie, Header
 from fastapi.responses import RedirectResponse, HTMLResponse
@@ -10,7 +11,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from backend.database import get_db
 from backend.config import settings as app_settings
-from backend.models import SystemSettings, ConnectedPage, User
+from backend.models import SystemSettings, ConnectedPage, User, UserSession
 from backend.schemas import SetupConfigRequest, SetupConfigResponse
 from backend.orchestrator import orchestrator
 from backend.auth_deps import get_current_user, verify_page_ownership
@@ -373,6 +374,7 @@ def get_facebook_login_url(user: User = Depends(get_current_user)):
 @router.get("/auth/facebook/callback")
 async def facebook_oauth_callback(
     code: str = Query(...),
+    session_id: Optional[str] = Cookie(None),
     user_email: Optional[str] = Cookie(None),
     db = Depends(get_db)
 ):
@@ -419,7 +421,17 @@ async def facebook_oauth_callback(
                     ig_id = ig_obj.get("id", "")
 
                 user = None
-                if user_email:
+                if session_id:
+                    stmt_s = select(UserSession).where(
+                        UserSession.session_token == session_id,
+                        UserSession.expires_at > datetime.datetime.utcnow()
+                    )
+                    session = db.execute(stmt_s).scalars().first()
+                    if session:
+                        stmt_u = select(User).where(User.id == session.user_id)
+                        user = db.execute(stmt_u).scalars().first()
+
+                if not user and user_email:
                     user = db.execute(select(User).where(User.email == user_email.strip().lower())).scalars().first()
 
                 stmt_p = select(ConnectedPage).where(ConnectedPage.facebook_page_id == p_id)
