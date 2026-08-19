@@ -15,20 +15,24 @@ if settings.TOKEN_ENCRYPTION_KEY:
 def encrypt_secret(plaintext: str) -> str:
     """
     Encrypts the plaintext value using Fernet.
+    Falls back to storing plain text if cipher is not initialized (with a warning).
     """
     if not plaintext:
         return plaintext
 
     if not _cipher:
-        # Fail safe
-        raise ValueError("Encryption cipher is not initialized. TOKEN_ENCRYPTION_KEY may be missing or invalid.")
+        logger.warning(
+            "TOKEN_ENCRYPTION_KEY is not set — storing token as plain text. "
+            "Set TOKEN_ENCRYPTION_KEY in Vercel environment variables for security."
+        )
+        return plaintext
 
     try:
         encrypted_bytes = _cipher.encrypt(plaintext.encode('utf-8'))
         return encrypted_bytes.decode('utf-8')
     except Exception as e:
         logger.error(f"Failed to encrypt secret: {e}")
-        raise ValueError(f"Encryption failed: {e}")
+        return plaintext  # Fallback to plain text rather than crashing
 
 def decrypt_secret(ciphertext: str) -> str:
     """

@@ -40,15 +40,18 @@ _db_initialized = False
 def init_db():
     global _db_initialized
     if not _db_initialized:
-        if "sqlite" in db_url and settings.DEBUG:
-            logger.info("SQLite development mode: automatically ensuring database tables exist.")
+        if "sqlite" in db_url:
+            # Always auto-create SQLite tables (SQLite is ephemeral on Vercel /tmp anyway)
+            logger.info("SQLite database: automatically ensuring all tables exist.")
             try:
                 Base.metadata.create_all(bind=engine)
+                logger.info("SQLite tables created/verified successfully.")
             except Exception as e:
-                logger.error(f"Error automatically creating SQLite tables: {e}")
+                logger.error(f"Error creating SQLite tables: {e}")
                 raise e
         else:
-            logger.info("Production mode or non-SQLite database: Skipping automatic table creation. Use migrations.")
+            # For PostgreSQL / real production DBs, rely on Alembic migrations
+            logger.info("Non-SQLite database detected: skipping auto table creation. Use Alembic migrations.")
         _db_initialized = True
 
 def get_db():
