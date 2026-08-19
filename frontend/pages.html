@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connected Pages & Growth Targets - Omni FB Analytics</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="shortcut icon" href="/static/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css?v=20260806_v12">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <a href="/" class="brand" style="text-decoration:none;">
+                <div class="logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 17 22 12"></polyline></svg>
+                </div>
+                <div class="brand-text">
+                    <h2>OMNI FB ANALYTICS</h2>
+                    <span>Growth Platform</span>
+                </div>
+            </a>
+
+            <nav class="nav-menu">
+                <a href="/dashboard" class="nav-item" data-path="/dashboard">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    <span>Command Center</span>
+                </a>
+                <a href="/posts?filter=PUBLISHED" class="nav-item" data-path="/posts">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <span>📢 Published Feed</span>
+                </a>
+                <a href="/analytics" class="nav-item" data-path="/analytics">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    <span>Growth Analytics</span>
+                </a>
+                <a href="/pages" class="nav-item active" data-path="/pages">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <span>📄 Connected Pages</span>
+                </a>
+                <a href="/settings" class="nav-item" data-path="/settings">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <span>⚙️ Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="auto-status-card">
+                    <div class="status-indicator-dot" id="sidebar-auto-dot"></div>
+                    <div class="status-info">
+                        <div class="status-title">AUTO MODE</div>
+                        <div class="status-sub" id="sidebar-auto-text">OFFLINE</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-title">
+                    <h1 id="header-page-title">Connected Facebook Pages & Instagram Accounts</h1>
+                    <p id="header-page-sub">Configure target audience, brand goals, and launch 24/7 active AI growth pipelines</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" id="btn-trigger-cycle">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                        <span>Run AI Cycle Now</span>
+                    </button>
+                    <div class="toggle-switch-wrapper">
+                        <span class="toggle-label">Autonomous Engine:</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="header-auto-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="user-auth-widget">
+                        <button class="btn btn-secondary" id="btn-show-auth">
+                            <span id="user-display-name">Sign In</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <section class="tab-content active">
+                <div class="setup-container">
+                    <div class="card glass-card setup-card mb-4">
+                        <div class="card-header flex-between align-center">
+                            <div>
+                                <h3>📄 All Connected Facebook Pages & Instagram Accounts</h3>
+                                <p>Set target goals, target audience, brand voice, and enable/disable 24/7 active AI growth per page.</p>
+                            </div>
+                            <button type="button" class="btn btn-fb-login" id="btn-settings-connect-fb">
+                                <span>+ Connect New Facebook Account</span>
+                            </button>
+                        </div>
+                        <div id="settings-connected-pages-list" class="mt-3">
+                            <!-- Loaded dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Page Target Configuration Modal -->
+    <div class="modal-overlay" id="target-modal">
+        <div class="modal-card" style="max-width:680px;border-radius:18px;">
+            <button class="modal-close" onclick="closeTargetModal()">&times;</button>
+            <div style="margin-bottom:20px;">
+                <div style="background:#e0e7ff;color:#3730a3;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+                    <span>🧠 Step 1: Tell AI about your business description so it understands your topics before working!</span>
+                </div>
+                <h3 style="font-size:20px;color:#0f172a;font-weight:700;">📝 Page About & Growth Strategy for <span id="modal-page-name" style="color:#4f46e5;">Facebook Page</span></h3>
+                <p style="font-size:13px;color:#64748b;">Enter your business details below. The Master AI Agent will analyze your About text to generate 100% accurate posts & images!</p>
+            </div>
+            <form id="form-page-target">
+                <input type="hidden" id="modal-page-id">
+                <div class="form-group mb-3">
+                    <label for="page-about" style="font-size:13px;font-weight:700;color:#0f172a;display:block;margin-bottom:6px;">
+                        📝 Page About / Business Description <span style="color:#ef4444;">* Required</span>
+                    </label>
+                    <textarea id="page-about" rows="3" required placeholder="e.g. We are an eco-friendly skincare brand manufacturing organic vegan face creams, natural sunscreens, and anti-aging serums for sensitive skin..." class="form-input" style="height:auto;padding:12px;border:1.5px solid #818cf8;border-radius:10px;font-size:14px;"></textarea>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="target-audience" style="font-size:13px;font-weight:600;color:#334155;">Target Audience & Customer Persona</label>
+                    <input type="text" id="target-audience" required placeholder="e.g. Skincare enthusiasts, Tech buyers, Local customers, Gen-Z" class="form-input">
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="growth-goal" style="font-size:13px;font-weight:600;color:#334155;">Primary Growth Goal / Future Strategy</label>
+                    <select id="growth-goal" class="form-select">
+                        <option value="Brand Awareness & Organic Engagement">Brand Awareness & Organic Engagement</option>
+                        <option value="Product Sales & E-commerce Conversions">Product Sales & E-commerce Conversions</option>
+                        <option value="High Viral Reach & Reel Views">High Viral Reach & Reel Views</option>
+                        <option value="Educational Authority & Lead Generation">Educational Authority & Lead Generation</option>
+                    </select>
+                </div>
+                <div class="form-row mb-3">
+                    <div class="form-group">
+                        <label for="tone-of-voice" style="font-size:13px;font-weight:600;color:#334155;">Brand Tone of Voice</label>
+                        <select id="tone-of-voice" class="form-select">
+                            <option value="Professional & Authoritative">Professional & Authoritative</option>
+                            <option value="Fun, Casual & Viral">Fun, Casual & Viral</option>
+                            <option value="Educational Mentor & Expert">Educational Mentor & Expert</option>
+                            <option value="Inspirational & Storyteller">Inspirational & Storyteller</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="page-category-modal" style="font-size:13px;font-weight:600;color:#334155;">Niche Category</label>
+                        <select id="page-category-modal" class="form-select">
+                            <option value="Technology & AI">Technology & AI</option>
+                            <option value="Digital Marketing & Growth">Digital Marketing & Growth</option>
+                            <option value="Business & Entrepreneurship">Business & Entrepreneurship</option>
+                            <option value="Beauty, Cosmetic & Personal Care">Beauty, Cosmetic & Personal Care</option>
+                            <option value="Fitness & Wellness">Fitness & Wellness</option>
+                            <option value="Fashion & Lifestyle">Fashion & Lifestyle</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group mb-4">
+                    <label for="custom-instructions" style="font-size:13px;font-weight:600;color:#334155;">Special AI Instructions (Optional)</label>
+                    <textarea id="custom-instructions" rows="2" placeholder="e.g. Always mention eco-friendly ingredients, include discount code SAVE10, focus on carousel infographics..." class="form-input" style="height:auto;padding:10px;"></textarea>
+                </div>
+                <div class="flex-between align-center">
+                    <button type="button" class="btn btn-secondary" onclick="closeTargetModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-save-launch-target" style="background:#4f46e5;font-weight:700;padding:10px 20px;">
+                        🚀 Save Page About & Launch Master AI Engine &rarr;
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div class="modal-overlay" id="auth-modal">
+        <div class="modal-card">
+            <button class="modal-close" id="btn-close-auth">&times;</button>
+            <div class="auth-tabs">
+                <button class="auth-tab-btn active" id="tab-btn-login">Log In</button>
+                <button class="auth-tab-btn" id="tab-btn-signup">Sign Up</button>
+            </div>
+            <form id="form-login" class="auth-form">
+                <div class="form-group">
+                    <label for="login-email">Email Address</label>
+                    <input type="email" id="login-email" required placeholder="manager@growth.ai" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••" class="form-input">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Log In & Continue</button>
+            </form>
+            <form id="form-signup" class="auth-form" style="display:none;">
+                <div class="form-group">
+                    <label for="signup-name">Full Name</label>
+                    <input type="text" id="signup-name" required placeholder="John Growth" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email Address</label>
+                    <input type="email" id="signup-email" required placeholder="manager@growth.ai" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" required placeholder="••••••••" class="form-input">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/api.js?v=20260806_v12"></script>
+    <script src="/static/js/app.js?v=20260806_v12"></script>
+</body>
+</html>

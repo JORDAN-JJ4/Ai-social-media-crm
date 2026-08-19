@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omni FB Analytics - Autonomous Growth Platform</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="shortcut icon" href="/static/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+
+    <!-- VIEW 1: LANDING PAGE -->
+    <div id="view-landing" class="page-view active">
+        <!-- Landing Header -->
+        <header class="landing-header">
+            <div class="brand">
+                <div class="logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 17 22 12"></polyline></svg>
+                </div>
+                <div class="brand-text">
+                    <h2>OMNI FB ANALYTICS</h2>
+                    <span>Autonomous AI Growth Engine</span>
+                </div>
+            </div>
+            <div class="landing-nav-actions">
+                <a href="/dashboard" class="btn btn-secondary" style="text-decoration:none;">Go to Dashboard</a>
+                <button class="btn btn-secondary" onclick="openAuthModal('login')">Log In</button>
+                <button class="btn btn-primary" onclick="openAuthModal('signup')">Get Started</button>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="landing-hero">
+            <div class="pill-badge glow-badge mb-3">
+                <span class="pulse-ring"></span>
+                <span>Next-Gen Autonomous Social Media Growth Platform</span>
+            </div>
+            <h1>Omni FB Analytics & Growth,<br><span class="gradient-text">100% Autonomous AI.</span></h1>
+            <p>Connect your Facebook Pages & Instagram Business Accounts once. 8 specialized AI agents continuously research trends, design carousels, write viral hooks, dynamically schedule, publish, analyze metrics, and self-learn 24/7.</p>
+            
+            <div class="hero-cta-group">
+                <a href="/onboarding" class="btn btn-primary btn-hero" style="text-decoration:none;">
+                    <span>Start Growing Hands-Free &rarr;</span>
+                </a>
+                <a href="/dashboard" class="btn btn-secondary btn-hero" style="text-decoration:none;">
+                    <span>Log In to Dashboard</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- 8 AI Agents Feature Grid -->
+        <section class="landing-features">
+            <h2 class="section-title text-center">Powered by 8 Autonomous AI Agents</h2>
+            <p class="section-sub text-center">Every agent performs its specialized role automatically without manual prompts.</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>1. Trend Research Agent</h3>
+                    <p>Scans news, seasonal events, and viral formats for your category while filtering fake news.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>2. Strategy Agent</h3>
+                    <p>Formulates daily strategy deciding post count, image vs. reel ratios, and content angles.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✍️</div>
+                    <h3>3. Content Agent</h3>
+                    <p>Generates non-robotic scroll-stopping hooks, titles, captions, CTAs, and hashtags.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>4. Creative Agent</h3>
+                    <p>Designs visual infographics, poster visual concepts, and multi-slide carousel graphics.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⏰</div>
+                    <h3>5. Scheduler Agent</h3>
+                    <p>Calculates dynamic optimal posting times and shifts schedule automatically if engagement drops.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>6. Publisher Agent</h3>
+                    <p>Publishes automatically to Facebook Pages & Instagram Accounts via Meta Graph API with retry logs.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>7. Analytics Agent</h3>
+                    <p>Captures reach, impressions, likes, comments, shares, saves, watch time, and follower growth.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3>8. Learning Agent</h3>
+                    <p>Daily self-learning cycle analyzing "What worked vs. What failed" to refine future content strategy.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Auth Modal -->
+    <div class="modal-overlay" id="auth-modal">
+        <div class="modal-card">
+            <button class="modal-close" id="btn-close-auth">&times;</button>
+            <div class="auth-tabs">
+                <button class="auth-tab-btn active" id="tab-btn-login">Log In</button>
+                <button class="auth-tab-btn" id="tab-btn-signup">Sign Up</button>
+            </div>
+            <form id="form-login" class="auth-form">
+                <div class="form-group">
+                    <label for="login-email">Email Address</label>
+                    <input type="email" id="login-email" required placeholder="manager@growth.ai" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••" class="form-input">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Log In & Continue</button>
+            </form>
+            <form id="form-signup" class="auth-form" style="display:none;">
+                <div class="form-group">
+                    <label for="signup-name">Full Name</label>
+                    <input type="text" id="signup-name" required placeholder="John Growth" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email Address</label>
+                    <input type="email" id="signup-email" required placeholder="manager@growth.ai" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" required placeholder="••••••••" class="form-input">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

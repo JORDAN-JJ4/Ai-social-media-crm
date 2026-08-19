@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding Setup - Omni FB Analytics</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="shortcut icon" href="/static/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body style="background:var(--bg-app);min-height:100vh;display:flex;align-items:center;justify-content:center;">
+
+    <div class="onboarding-container" style="width:100%;max-width:800px;padding:24px;">
+        <div class="card glass-card wizard-card">
+            <div class="wizard-header text-center">
+                <h2>🚀 Omni FB Analytics Setup Wizard</h2>
+                <p>Connect Facebook, select which pages the AI should handle, and assign categories.</p>
+            </div>
+
+            <!-- Step 1: Facebook Connect -->
+            <div class="wizard-step active" id="wizard-step-1">
+                <div class="fb-connect-box">
+                    <div class="fb-connect-info">
+                        <h4>🔗 Step 1: Connect Facebook & Instagram</h4>
+                        <p>Authorize Meta Login to discover all your Facebook Pages & Instagram accounts.</p>
+                    </div>
+                    <button type="button" class="btn btn-fb-login" id="btn-wizard-connect-fb">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        <span>Connect Facebook Account</span>
+                    </button>
+                </div>
+
+                <div class="step-actions mt-4 flex-between">
+                    <a href="/dashboard" class="btn btn-secondary" style="text-decoration:none;">Skip to Dashboard &rarr;</a>
+                    <button class="btn btn-primary" onclick="loadDiscoveredPagesStep()">Next: Select Pages &rarr;</button>
+                </div>
+            </div>
+
+            <!-- Step 2 & 3: Multi-Page Selection & Category Assignment -->
+            <div class="wizard-step" id="wizard-step-2" style="display:none;">
+                <h3>📋 Step 2: Select Pages to Handle & Assign Categories</h3>
+                <p class="sub-text mb-3">Select which pages you want Omni FB Analytics AI to autonomously manage and assign their category.</p>
+
+                <div class="pages-select-list" id="wizard-pages-container">
+                    <!-- Loaded dynamically -->
+                </div>
+
+                <div class="step-actions mt-4 flex-between">
+                    <button class="btn btn-secondary" onclick="showWizardStep(1)">&larr; Back</button>
+                    <button class="btn btn-primary" onclick="savePagesAndProceed()">Next: API Keys & Auto Mode &rarr;</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Keys & Auto Mode -->
+            <div class="wizard-step" id="wizard-step-3" style="display:none;">
+                <h3>⚙️ Step 3: Enter API Keys & Enable Auto Mode</h3>
+                <form id="wizard-keys-form" class="setup-form mt-3">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="wiz-gemini-key">Gemini API Key</label>
+                            <input type="password" id="wiz-gemini-key" placeholder="AIzaSy..." class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="wiz-virtux-key">Image API Key (Virtux)</label>
+                            <input type="password" id="wiz-virtux-key" placeholder="virtux_sk_..." class="form-input">
+                        </div>
+                    </div>
+                    <div class="form-row align-center">
+                        <div class="form-group inline-checkbox">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="wiz-auto-mode" checked>
+                                <span class="checkmark"></span>
+                                <span class="checkbox-label">Enable Auto Mode (Fully Autonomous Growth)</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="step-actions mt-4 flex-between">
+                        <button type="button" class="btn btn-secondary" onclick="showWizardStep(2)">&larr; Back</button>
+                        <button type="submit" class="btn btn-primary">Complete Setup & Launch Dashboard &rarr;</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div class="modal-overlay" id="auth-modal">
+        <div class="modal-card">
+            <button class="modal-close" id="btn-close-auth">&times;</button>
+            <div class="auth-tabs">
+                <button class="auth-tab-btn active" id="tab-btn-login">Log In</button>
+                <button class="auth-tab-btn" id="tab-btn-signup">Sign Up</button>
+            </div>
+            <form id="form-login" class="auth-form">
+                <div class="form-group">
+                    <label for="login-email">Email Address</label>
+                    <input type="email" id="login-email" required placeholder="manager@growth.ai" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••" class="form-input">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Log In & Continue</button>
+            </form>
+            <form id="form-signup" class="auth-form" style="display:none;">
+                <div class="form-group">
+                    <label for="signup-name">Full Name</label>
+                    <input type="text" id="signup-name" required placeholder="John Growth" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email Address</label>
+                    <input type="email" id="signup-email" required placeholder="manager@growth.ai" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" required placeholder="••••••••" class="form-input">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
