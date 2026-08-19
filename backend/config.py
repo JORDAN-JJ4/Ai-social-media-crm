@@ -19,22 +19,22 @@ def _load_env_file(filepath=".env"):
 _load_env_file()
 
 class Settings(BaseModel):
-    APP_NAME: str = os.getenv("APP_NAME", "Omni FB Analytics")
-    DEBUG: bool = os.getenv("DEBUG", "True").lower() == "true"
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./social_growth.db")
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "super-secret-autonomous-key-2026")
-    TOKEN_ENCRYPTION_KEY: str = os.getenv("TOKEN_ENCRYPTION_KEY", "")
-    CRON_SECRET: str = os.getenv("CRON_SECRET", "")
-    DEMO_MODE: bool = os.getenv("DEMO_MODE", "False").lower() == "true"
-    
-    FACEBOOK_APP_ID: str = os.getenv("FACEBOOK_APP_ID", "")
-    FACEBOOK_CLIENT_SECRET: str = os.getenv("FACEBOOK_CLIENT_SECRET", "")
-    FACEBOOK_REDIRECT_URI: str = os.getenv("FACEBOOK_REDIRECT_URI", "")
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
-    
-    # Execution frequency for Autonomous Orchestrator tick in minutes
-    AUTONOMOUS_CYCLE_INTERVAL_MINUTES: int = int(os.getenv("AUTONOMOUS_CYCLE_INTERVAL_MINUTES", "60"))
+    APP_NAME: str = os.getenv("APP_NAME", "Omni FB Analytics") or "Omni FB Analytics"
+    DEBUG: bool = (os.getenv("DEBUG", "True") or "True").lower() == "true"
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./social_growth.db") or "sqlite:///./social_growth.db"
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "super-secret-autonomous-key-2026") or "super-secret-autonomous-key-2026"
+    TOKEN_ENCRYPTION_KEY: str = os.getenv("TOKEN_ENCRYPTION_KEY", "") or ""
+    CRON_SECRET: str = os.getenv("CRON_SECRET", "") or ""
+    DEMO_MODE: bool = (os.getenv("DEMO_MODE", "False") or "False").lower() == "true"
+
+    FACEBOOK_APP_ID: str = os.getenv("FACEBOOK_APP_ID", "") or ""
+    FACEBOOK_CLIENT_SECRET: str = os.getenv("FACEBOOK_CLIENT_SECRET", "") or ""
+    FACEBOOK_REDIRECT_URI: str = os.getenv("FACEBOOK_REDIRECT_URI", "") or ""
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "") or ""
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "") or ""
+
+    # Safe int parse: handles empty string env vars gracefully
+    AUTONOMOUS_CYCLE_INTERVAL_MINUTES: int = int(os.getenv("AUTONOMOUS_CYCLE_INTERVAL_MINUTES", "60") or "60")
 
     @model_validator(mode="after")
     def validate_production_safeguards(self) -> "Settings":

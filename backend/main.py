@@ -51,7 +51,7 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down platform.")
 
 app = FastAPI(
-    title=settings.APP_NAME,
+    title=settings.APP_NAME or "Omni FB Analytics",
     description="Autonomous Multi-Agent AI Platform for Facebook & Instagram Growth",
     version="1.0.0",
     lifespan=lifespan
