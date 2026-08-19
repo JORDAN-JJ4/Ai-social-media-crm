@@ -1,29 +1,26 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "backend/main.py",
-      "use": "@vercel/python",
-      "config": {
-        "maxLambdaSize": "50mb"
-      }
-    },
-    {
-      "src": "frontend/**",
-      "use": "@vercel/static"
+  "functions": {
+    "backend/main.py": {
+      "runtime": "@vercel/python",
+      "maxDuration": 30
     }
-  ],
+  },
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "backend/main.py"
-    },
     {
       "src": "/static/(.*)",
       "dest": "/frontend/$1"
     },
     {
+      "src": "/api/(.*)",
+      "dest": "backend/main.py"
+    },
+    {
       "src": "/(dashboard|posts|analytics|pages|settings|onboarding|landing|overview)",
+      "dest": "backend/main.py"
+    },
+    {
+      "src": "/auth/(.*)",
       "dest": "backend/main.py"
     },
     {
