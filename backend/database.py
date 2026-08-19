@@ -7,6 +7,10 @@ from backend.config import settings
 logger = logging.getLogger("database")
 
 db_url = settings.DATABASE_URL
+# Guard against DATABASE_URL set to empty string in env (os.getenv returns "" not the default)
+if not db_url or not db_url.strip():
+    logger.warning("DATABASE_URL is empty — falling back to default SQLite database.")
+    db_url = "sqlite:///./social_growth.db"
 if db_url.startswith("postgres://"):
     # Fix for SQLAlchemy 1.4+ compatibility with Supabase/Heroku postgres URLs
     db_url = db_url.replace("postgres://", "postgresql://", 1)
