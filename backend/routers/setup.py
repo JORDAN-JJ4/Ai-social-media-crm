@@ -4,15 +4,16 @@ import urllib.parse
 import httpx
 import logging
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Cookie, Header
 from fastapi.responses import RedirectResponse, HTMLResponse
 from pydantic import BaseModel
 from sqlalchemy import select
 from backend.database import get_db
 from backend.config import settings as app_settings
-from backend.models import SystemSettings, ConnectedPage
+from backend.models import SystemSettings, ConnectedPage, User
 from backend.schemas import SetupConfigRequest, SetupConfigResponse
 from backend.orchestrator import orchestrator
+from backend.auth_deps import get_current_user, verify_page_ownership
 
 logger = logging.getLogger("setup_router")
 router = APIRouter(prefix="", tags=["Setup & Settings"])
@@ -65,7 +66,7 @@ class PageTargetGoalRequest(BaseModel):
 
 
 @router.get("/api/setup", response_model=SetupConfigResponse)
-def get_setup(db = Depends(get_db)):
+def get_setup(user: User = Depends(get_current_user), db = Depends(get_db)):
     stmt = select(SystemSettings).order_by(SystemSettings.id.desc())
     res = db.execute(stmt)
     settings = res.scalars().first()
@@ -82,10 +83,23 @@ def get_setup(db = Depends(get_db)):
     else:
         if not settings.gemini_api_key:
             settings.gemini_api_key = app_settings.GEMINI_API_KEY or os.getenv("GEMINI_API_KEY", "")
-    return settings
+    return {
+        "id": settings.id,
+        "facebook_page_id": settings.facebook_page_id,
+        "facebook_access_token": "********" if settings.facebook_access_token else "",
+        "instagram_account_id": settings.instagram_account_id,
+        "instagram_access_token": "********" if settings.instagram_access_token else "",
+        "page_category": settings.page_category,
+        "language": settings.language,
+        "gemini_api_key": settings.gemini_api_key,
+        "virtux_api_key": settings.virtux_api_key,
+        "auto_mode_enabled": settings.auto_mode_enabled,
+        "timezone": settings.timezone,
+        "updated_at": settings.updated_at
+    }
 
 @router.post("/api/setup", response_model=SetupConfigResponse)
-def save_setup(payload: SetupConfigRequest, db = Depends(get_db)):
+def save_setup(payload: SetupConfigRequest, user: User = Depends(get_current_user), db = Depends(get_db)):
     stmt = select(SystemSettings).order_by(SystemSettings.id.desc())
     res = db.execute(stmt)
     settings = res.scalars().first()
@@ -94,9 +108,17 @@ def save_setup(payload: SetupConfigRequest, db = Depends(get_db)):
         settings = SystemSettings()
 
     settings.facebook_page_id = payload.facebook_page_id or ""
-    settings.facebook_access_token = payload.facebook_access_token or ""
+    if payload.facebook_access_token and payload.facebook_access_token != "********":
+        settings.facebook_access_token = payload.facebook_access_token
+    elif payload.facebook_access_token == "":
+        settings.facebook_access_token = ""
+
     settings.instagram_account_id = payload.instagram_account_id or ""
-    settings.instagram_access_token = payload.instagram_access_token or ""
+    if payload.instagram_access_token and payload.instagram_access_token != "********":
+        settings.instagram_access_token = payload.instagram_access_token
+    elif payload.instagram_access_token == "":
+        settings.instagram_access_token = ""
+
     settings.page_category = payload.page_category
     settings.language = payload.language
     settings.gemini_api_key = payload.gemini_api_key or ""
@@ -110,26 +132,69 @@ def save_setup(payload: SetupConfigRequest, db = Depends(get_db)):
     db.add(settings)
     db.commit()
     db.refresh(settings)
-    return settings
+    return {
+        "id": settings.id,
+        "facebook_page_id": settings.facebook_page_id,
+        "facebook_access_token": "********" if settings.facebook_access_token else "",
+        "instagram_account_id": settings.instagram_account_id,
+        "instagram_access_token": "********" if settings.instagram_access_token else "",
+        "page_category": settings.page_category,
+        "language": settings.language,
+        "gemini_api_key": settings.gemini_api_key,
+        "virtux_api_key": settings.virtux_api_key,
+        "auto_mode_enabled": settings.auto_mode_enabled,
+        "timezone": settings.timezone,
+        "updated_at": settings.updated_at
+    }
 
 @router.get("/api/setup/pages")
-def get_connected_pages(db = Depends(get_db)):
-    stmt = select(ConnectedPage).order_by(ConnectedPage.id.desc())
+def get_connected_pages(user: User = Depends(get_current_user), db = Depends(get_db)):
+    stmt = select(ConnectedPage).where((ConnectedPage.user_id == user.id) | (ConnectedPage.user_id == None)).order_by(ConnectedPage.id.desc())
     res = db.execute(stmt)
     pages = res.scalars().all()
-    return pages
+    pages_data = []
+    for page in pages:
+        if page.user_id is None:
+            page.user_id = user.id
+            db.add(page)
+        pages_data.append({
+            "id": page.id,
+            "user_id": page.user_id,
+            "facebook_page_id": page.facebook_page_id,
+            "facebook_page_name": page.facebook_page_name,
+            "facebook_access_token": "********" if page.facebook_access_token else "",
+            "instagram_account_id": page.instagram_account_id,
+            "instagram_account_name": page.instagram_account_name,
+            "page_category": page.page_category,
+            "language": page.language,
+            "page_about": page.page_about,
+            "target_audience": page.target_audience,
+            "growth_goal": page.growth_goal,
+            "tone_of_voice": page.tone_of_voice,
+            "custom_instructions": page.custom_instructions,
+            "is_active_growth": page.is_active_growth,
+            "created_at": page.created_at
+        })
+    if pages:
+        db.commit()
+    return pages_data
 
 @router.post("/api/setup/pages")
-def save_connected_pages(pages_list: List[PageGrowthUpdateItem], db = Depends(get_db)):
+def save_connected_pages(pages_list: List[PageGrowthUpdateItem], user: User = Depends(get_current_user), db = Depends(get_db)):
     for p in pages_list:
         stmt = select(ConnectedPage).where(ConnectedPage.facebook_page_id == p.facebook_page_id)
         res = db.execute(stmt)
         existing = res.scalars().first()
 
         if existing:
+            if existing.user_id is not None and existing.user_id != user.id:
+                raise HTTPException(status_code=403, detail="Forbidden: You do not own this connected page")
             existing.page_category = p.page_category
             existing.language = p.language
             existing.is_active_growth = p.is_active_growth
+            existing.user_id = user.id
+            if p.facebook_access_token and p.facebook_access_token != "********":
+                existing.facebook_access_token = p.facebook_access_token
             db.add(existing)
         else:
             new_p = ConnectedPage(
@@ -140,7 +205,8 @@ def save_connected_pages(pages_list: List[PageGrowthUpdateItem], db = Depends(ge
                 instagram_account_name=p.instagram_account_name or "",
                 page_category=p.page_category,
                 language=p.language,
-                is_active_growth=True
+                is_active_growth=True,
+                user_id=user.id
             )
             db.add(new_p)
 
@@ -148,12 +214,12 @@ def save_connected_pages(pages_list: List[PageGrowthUpdateItem], db = Depends(ge
     return {"status": "SUCCESS", "updated": len(pages_list)}
 
 @router.post("/api/setup/pages/{facebook_page_id}/target")
-def save_page_target_goal(facebook_page_id: str, payload: PageTargetGoalRequest, db = Depends(get_db)):
-    stmt = select(ConnectedPage).where(ConnectedPage.facebook_page_id == facebook_page_id)
-    res = db.execute(stmt)
-    page = res.scalars().first()
-    if not page:
-        raise HTTPException(status_code=404, detail="Connected page not found")
+def save_page_target_goal(
+    facebook_page_id: str,
+    payload: PageTargetGoalRequest,
+    page: ConnectedPage = Depends(verify_page_ownership),
+    db = Depends(get_db)
+):
 
     page.page_about = payload.page_about or page.page_about or ""
     page.target_audience = payload.target_audience
@@ -188,21 +254,35 @@ def save_page_target_goal(facebook_page_id: str, payload: PageTargetGoalRequest,
     return {"status": "SUCCESS", "message": f"Target growth goal updated for '{page.facebook_page_name}'!"}
 
 @router.get("/api/setup/cron-tick")
-async def vercel_cron_tick(db = Depends(get_db)):
+async def vercel_cron_tick(
+    authorization: Optional[str] = Header(None),
+    db = Depends(get_db)
+):
     """
     Vercel Free Cron Job endpoint triggered automatically every hour on Vercel Serverless.
     """
+    cron_secret = app_settings.CRON_SECRET or os.getenv("CRON_SECRET", "")
+    if not cron_secret:
+        logger.error("Vercel Cron security alert: CRON_SECRET environment variable is not configured.")
+        raise HTTPException(status_code=401, detail="Cron secret is not configured.")
+
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    token = authorization.split("Bearer ", 1)[1].strip()
+    if token != cron_secret:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
     from backend.orchestrator import orchestrator
     res = await orchestrator.run_full_autonomous_cycle(force=True)
     return {"status": "SUCCESS", "cron_result": res}
 
 @router.post("/api/setup/pages/{facebook_page_id}/trigger")
-async def trigger_page_growth_pipeline(facebook_page_id: str, db = Depends(get_db)):
-    stmt = select(ConnectedPage).where(ConnectedPage.facebook_page_id == facebook_page_id)
-    res = db.execute(stmt)
-    page = res.scalars().first()
-    if not page:
-        raise HTTPException(status_code=404, detail="Page not found")
+async def trigger_page_growth_pipeline(
+    facebook_page_id: str,
+    page: ConnectedPage = Depends(verify_page_ownership),
+    db = Depends(get_db)
+):
 
     page.is_active_growth = True
     db.add(page)
@@ -241,12 +321,11 @@ async def trigger_page_growth_pipeline(facebook_page_id: str, db = Depends(get_d
 
 
 @router.delete("/api/setup/pages/{facebook_page_id}")
-def delete_connected_page(facebook_page_id: str, db = Depends(get_db)):
-    stmt = select(ConnectedPage).where(ConnectedPage.facebook_page_id == facebook_page_id)
-    res = db.execute(stmt)
-    page = res.scalars().first()
-    if not page:
-        raise HTTPException(status_code=404, detail="Connected page not found")
+def delete_connected_page(
+    facebook_page_id: str,
+    page: ConnectedPage = Depends(verify_page_ownership),
+    db = Depends(get_db)
+):
     
     db.delete(page)
     
@@ -269,7 +348,7 @@ def delete_connected_page(facebook_page_id: str, db = Depends(get_db)):
     return {"status": "SUCCESS", "message": f"Page {facebook_page_id} disconnected successfully."}
 
 @router.get("/api/setup/env")
-def get_env_credentials():
+def get_env_credentials(user: User = Depends(get_current_user)):
     return {
         "facebook_app_id": app_settings.FACEBOOK_APP_ID,
         "facebook_redirect_uri": app_settings.FACEBOOK_REDIRECT_URI,
@@ -277,7 +356,7 @@ def get_env_credentials():
     }
 
 @router.get("/api/setup/facebook/login_url")
-def get_facebook_login_url():
+def get_facebook_login_url(user: User = Depends(get_current_user)):
     app_id = app_settings.FACEBOOK_APP_ID
     redirect_uri = app_settings.FACEBOOK_REDIRECT_URI or "http://localhost:8000/auth/facebook/callback"
     scope = "public_profile,pages_show_list,pages_read_engagement,pages_manage_posts,instagram_basic,instagram_content_publish"
@@ -292,7 +371,11 @@ def get_facebook_login_url():
     return {"login_url": url}
 
 @router.get("/auth/facebook/callback")
-async def facebook_oauth_callback(code: str = Query(...), db = Depends(get_db)):
+async def facebook_oauth_callback(
+    code: str = Query(...),
+    user_email: Optional[str] = Cookie(None),
+    db = Depends(get_db)
+):
     app_id = app_settings.FACEBOOK_APP_ID
     app_secret = app_settings.FACEBOOK_CLIENT_SECRET
     redirect_uri = app_settings.FACEBOOK_REDIRECT_URI or "http://localhost:8000/auth/facebook/callback"
@@ -335,6 +418,10 @@ async def facebook_oauth_callback(code: str = Query(...), db = Depends(get_db)):
                 if ig_obj and isinstance(ig_obj, dict):
                     ig_id = ig_obj.get("id", "")
 
+                user = None
+                if user_email:
+                    user = db.execute(select(User).where(User.email == user_email.strip().lower())).scalars().first()
+
                 stmt_p = select(ConnectedPage).where(ConnectedPage.facebook_page_id == p_id)
                 res_p = db.execute(stmt_p)
                 existing_p = res_p.scalars().first()
@@ -344,6 +431,8 @@ async def facebook_oauth_callback(code: str = Query(...), db = Depends(get_db)):
                     existing_p.facebook_access_token = p_token
                     existing_p.instagram_account_id = ig_id
                     existing_p.page_category = p_cat
+                    if user:
+                        existing_p.user_id = user.id
                     db.add(existing_p)
                 else:
                     new_p = ConnectedPage(
@@ -352,7 +441,8 @@ async def facebook_oauth_callback(code: str = Query(...), db = Depends(get_db)):
                         facebook_access_token=p_token,
                         instagram_account_id=ig_id,
                         page_category=p_cat,
-                        is_active_growth=True
+                        is_active_growth=True,
+                        user_id=user.id if user else None
                     )
                     db.add(new_p)
 

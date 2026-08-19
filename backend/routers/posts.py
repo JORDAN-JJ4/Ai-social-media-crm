@@ -2,8 +2,9 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy import select
 from backend.database import get_db
-from backend.models import ContentPost
+from backend.models import ContentPost, User
 from backend.schemas import PostResponse
+from backend.auth_deps import get_current_user
 
 router = APIRouter(prefix="/api/posts", tags=["Content Posts"])
 
@@ -11,6 +12,7 @@ router = APIRouter(prefix="/api/posts", tags=["Content Posts"])
 def list_posts(
     status: Optional[str] = None,
     limit: int = Query(20, ge=1, le=100),
+    user: User = Depends(get_current_user),
     db = Depends(get_db)
 ):
     stmt = select(ContentPost)
@@ -23,7 +25,11 @@ def list_posts(
     return posts
 
 @router.get("/{post_id}", response_model=PostResponse)
-def get_post_detail(post_id: int, db = Depends(get_db)):
+def get_post_detail(
+    post_id: int,
+    user: User = Depends(get_current_user),
+    db = Depends(get_db)
+):
     stmt = select(ContentPost).where(ContentPost.id == post_id)
     res = db.execute(stmt)
     post = res.scalars().first()

@@ -22,8 +22,11 @@ class GroqService:
         Calls Groq API with automatic model fallbacks and structured JSON output.
         """
         if not self.api_key:
-            logger.warning("Groq API key missing. Using fallback master engine.")
-            return self._generate_fallback(prompt, json_mode)
+            if app_settings.DEMO_MODE:
+                logger.warning("Groq API key missing. Using fallback master engine.")
+                return self._generate_fallback(prompt, json_mode)
+            else:
+                raise ValueError("Groq API key is not configured and DEMO_MODE is disabled.")
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -63,8 +66,11 @@ class GroqService:
             except Exception as e:
                 logger.error(f"Error calling Groq API model '{model}': {e}")
 
-        logger.warning("All Groq API models exhausted. Returning intelligent fallback response.")
-        return self._generate_fallback(prompt, json_mode)
+        if app_settings.DEMO_MODE:
+            logger.warning("All Groq API models exhausted. Returning intelligent fallback response.")
+            return self._generate_fallback(prompt, json_mode)
+        else:
+            raise RuntimeError("All Groq API models failed and DEMO_MODE is disabled.")
 
     def _generate_fallback(self, prompt: str, json_mode: bool) -> str:
         if json_mode:

@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy import select, func
 from backend.database import get_db
-from backend.models import ContentPost, AnalyticsData
+from backend.models import ContentPost, AnalyticsData, User
 from backend.schemas import AnalyticsOverviewResponse
+from backend.auth_deps import get_current_user
 
 router = APIRouter(prefix="/api/analytics", tags=["Analytics & Growth Reports"])
 
 @router.get("/overview", response_model=AnalyticsOverviewResponse)
-def get_analytics_overview(db = Depends(get_db)):
+def get_analytics_overview(user: User = Depends(get_current_user), db = Depends(get_db)):
     stmt_published = select(func.count(ContentPost.id)).where(ContentPost.status == "PUBLISHED")
     res_pub = db.execute(stmt_published)
     pub_count = res_pub.scalar() or 0

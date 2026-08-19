@@ -1,7 +1,23 @@
 import datetime
 from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, Float, ForeignKey, JSON
 from sqlalchemy.orm import relationship
+from sqlalchemy.types import TypeDecorator
 from backend.database import Base
+from backend.security import encrypt_secret, decrypt_secret
+
+class EncryptedText(TypeDecorator):
+    impl = Text
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        return encrypt_secret(value)
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        return decrypt_secret(value)
 
 class User(Base):
     __tablename__ = "users"
@@ -14,6 +30,18 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 
+class UserSession(Base):
+    __tablename__ = "user_sessions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    session_token = Column(String(255), unique=True, index=True, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    user = relationship("User")
+
+
 class ConnectedPage(Base):
     __tablename__ = "connected_pages"
 
@@ -21,7 +49,7 @@ class ConnectedPage(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     facebook_page_id = Column(String(255), index=True)
     facebook_page_name = Column(String(255))
-    facebook_access_token = Column(Text)
+    facebook_access_token = Column(EncryptedText)
     instagram_account_id = Column(String(255), nullable=True)
     instagram_account_name = Column(String(255), nullable=True)
     page_category = Column(String(255), default="Technology & AI")
@@ -40,9 +68,10 @@ class SystemSettings(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     facebook_page_id = Column(String(255), nullable=True, default="")
-    facebook_access_token = Column(Text, nullable=True, default="")
+    facebook_access_token = Column(EncryptedText, nullable=True, default="")
     instagram_account_id = Column(String(255), nullable=True, default="")
-    instagram_access_token = Column(Text, nullable=True, default="")
+    instagram_access_token = Column(EncryptedText, nullable=True, default="")
+
     page_category = Column(String(255), default="Technology & AI")
     language = Column(String(50), default="English")
     page_about = Column(Text, nullable=True, default="")

@@ -38,8 +38,15 @@ class ImageService:
                         data = res.json()
                         if "data" in data and len(data["data"]) > 0:
                             return data["data"][0].get("url", "")
+                    else:
+                        raise ValueError(f"Virtux API failed with status {res.status_code}: {res.text}")
             except Exception as e:
                 logger.error(f"Virtux API call failed: {e}")
+                if not app_settings.DEMO_MODE:
+                    raise e
+        else:
+            if not app_settings.DEMO_MODE:
+                raise ValueError("Virtux API key is not configured and DEMO_MODE is disabled.")
 
         # Dynamic Visual Graphic Poster Engine
         encoded_prompt = urllib.parse.quote(enhanced_design_prompt[:70])

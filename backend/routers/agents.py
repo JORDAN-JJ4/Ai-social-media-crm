@@ -1,14 +1,15 @@
 from fastapi import APIRouter, Depends, BackgroundTasks
 from sqlalchemy import select
 from backend.database import get_db
-from backend.models import SystemSettings, AgentMemory, TrendMemory, ConnectedPage, ContentPost
+from backend.models import SystemSettings, AgentMemory, TrendMemory, ConnectedPage, ContentPost, User
 from backend.schemas import AgentStatusListResponse
 from backend.orchestrator import orchestrator
+from backend.auth_deps import get_current_user
 
 router = APIRouter(prefix="/api/agents", tags=["AI Agents Control"])
 
 @router.get("/status", response_model=AgentStatusListResponse)
-def get_agents_status(db = Depends(get_db)):
+def get_agents_status(user: User = Depends(get_current_user), db = Depends(get_db)):
     stmt = select(SystemSettings).order_by(SystemSettings.id.desc())
     res = db.execute(stmt)
     settings = res.scalars().first()
@@ -21,12 +22,12 @@ def get_agents_status(db = Depends(get_db)):
     )
 
 @router.post("/trigger")
-def trigger_autonomous_cycle(background_tasks: BackgroundTasks):
+def trigger_autonomous_cycle(background_tasks: BackgroundTasks, user: User = Depends(get_current_user)):
     background_tasks.add_task(orchestrator.run_full_autonomous_cycle, force=True)
     return {"status": "SUCCESS", "message": "Autonomous AI Agent pipeline cycle triggered."}
 
 @router.get("/suggestions")
-async def get_ai_growth_suggestions(db = Depends(get_db)):
+async def get_ai_growth_suggestions(user: User = Depends(get_current_user), db = Depends(get_db)):
     stmt_page = select(ConnectedPage).where(ConnectedPage.is_active_growth == True)
     res_pages = db.execute(stmt_page)
     pages = res_pages.scalars().all()
@@ -74,7 +75,7 @@ async def get_ai_growth_suggestions(db = Depends(get_db)):
     return {"status": "SUCCESS", "suggestions": suggestions, "active_pages_count": len(pages)}
 
 @router.get("/memory")
-def get_agent_memory(db = Depends(get_db)):
+def get_agent_memory(user: User = Depends(get_current_user), db = Depends(get_db)):
     stmt_mem = select(AgentMemory)
     res_mem = db.execute(stmt_mem)
     memories = res_mem.scalars().all()

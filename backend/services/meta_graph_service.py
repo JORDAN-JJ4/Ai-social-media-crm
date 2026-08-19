@@ -2,6 +2,7 @@ import logging
 import httpx
 import random
 from typing import Dict, Any, Optional
+from backend.config import settings
 
 logger = logging.getLogger("meta_graph_service")
 
@@ -42,6 +43,10 @@ class MetaGraphService:
                 return {"success": False, "error": str(e)}
 
         # Simulation mode when tokens are unconfigured
+        if not settings.DEMO_MODE:
+            logger.error("Facebook credentials not configured and DEMO_MODE is disabled.")
+            return {"success": False, "error": "Meta credentials are not configured and DEMO_MODE is disabled."}
+
         simulated_id = f"fb_sim_{random.randint(1000000, 9999999)}"
         logger.info(f"[SIMULATED FB PUBLISH] Published to FB Page {self.fb_page_id or 'Demo Page'} -> Post ID: {simulated_id}")
         return {"success": True, "post_id": simulated_id, "simulated": True}
@@ -81,6 +86,10 @@ class MetaGraphService:
             except Exception as e:
                 logger.error(f"Failed Instagram Graph API post: {e}")
                 return {"success": False, "error": str(e)}
+
+        if not settings.DEMO_MODE:
+            logger.error("Instagram credentials not configured and DEMO_MODE is disabled.")
+            return {"success": False, "error": "Meta credentials are not configured and DEMO_MODE is disabled."}
 
         simulated_id = f"ig_sim_{random.randint(1000000, 9999999)}"
         logger.info(f"[SIMULATED IG PUBLISH] Published to IG Account {self.ig_account_id or 'Demo Account'} -> Post ID: {simulated_id}")

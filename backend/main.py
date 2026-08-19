@@ -1,10 +1,12 @@
 import os
 import asyncio
 import logging
+import secrets
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+
 
 from backend.config import settings
 from backend.database import init_db
@@ -63,6 +65,28 @@ async def add_no_cache_header(request, call_next):
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
     return response
+
+@app.middleware("http")
+async def csrf_cookie_middleware(request, call_next):
+    csrf_cookie = request.cookies.get("csrf_token")
+    had_cookie = bool(csrf_cookie)
+    if not had_cookie:
+        csrf_cookie = secrets.token_hex(32)
+
+    response = await call_next(request)
+
+    if not had_cookie:
+        response.set_cookie(
+            key="csrf_token",
+            value=csrf_cookie,
+            max_age=30*86400,
+            httponly=False,
+            secure=not settings.DEBUG,
+            samesite="lax",
+            path="/"
+        )
+    return response
+
 
 
 # Register API Routers

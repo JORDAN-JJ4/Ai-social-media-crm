@@ -1,3 +1,32 @@
+// Centralized CSRF fetch interceptor
+(function() {
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+    }
+
+    const originalFetch = window.fetch;
+    window.fetch = async function (resource, options = {}) {
+        const method = (options.method || 'GET').toUpperCase();
+        if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+            const csrfToken = getCookie('csrf_token');
+            if (csrfToken) {
+                if (!options.headers) {
+                    options.headers = {};
+                }
+                if (options.headers instanceof Headers) {
+                    options.headers.set('X-CSRF-Token', csrfToken);
+                } else {
+                    options.headers['X-CSRF-Token'] = csrfToken;
+                }
+            }
+        }
+        return originalFetch(resource, options);
+    };
+})();
+
 function getAuthHeaders() {
     const saved = localStorage.getItem('omni_user_email');
     return saved ? { 'X-User-Email': saved } : {};

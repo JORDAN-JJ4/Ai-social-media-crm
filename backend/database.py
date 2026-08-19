@@ -1,7 +1,10 @@
 import os
+import logging
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from backend.config import settings
+
+logger = logging.getLogger("database")
 
 db_url = settings.DATABASE_URL
 if db_url.startswith("postgres://"):
@@ -32,53 +35,26 @@ SessionLocal = sessionmaker(
 
 Base = declarative_base()
 
-import logging
-
-logger = logging.getLogger("database")
-
 _db_initialized = False
-fallback_engine = None
-fallback_SessionLocal = None
 
 def init_db():
-    global _db_initialized, engine, SessionLocal, fallback_engine, fallback_SessionLocal
+    global _db_initialized
     if not _db_initialized:
-        try:
-            Base.metadata.create_all(bind=engine)
-            _db_initialized = True
-        except Exception as e:
-            logger.error(f"PostgreSQL connection failed ({e}). Falling back to local /tmp database...")
+        if "sqlite" in db_url and settings.DEBUG:
+            logger.info("SQLite development mode: automatically ensuring database tables exist.")
             try:
-                tmp_url = "sqlite:////tmp/facebook_crm.db"
-                fallback_engine = create_engine(tmp_url, connect_args={"check_same_thread": False}, pool_pre_ping=True)
-                fallback_SessionLocal = sessionmaker(bind=fallback_engine, autocommit=False, autoflush=False)
-                Base.metadata.create_all(bind=fallback_engine)
-                engine = fallback_engine
-                SessionLocal = fallback_SessionLocal
-                _db_initialized = True
-            except Exception as ex:
-                logger.error(f"Fallback SQLite database failed: {ex}")
+                Base.metadata.create_all(bind=engine)
+            except Exception as e:
+                logger.error(f"Error automatically creating SQLite tables: {e}")
+                raise e
+        else:
+            logger.info("Production mode or non-SQLite database: Skipping automatic table creation. Use migrations.")
+        _db_initialized = True
 
 def get_db():
-    global SessionLocal
     init_db()
+    db = SessionLocal()
     try:
-        db = SessionLocal()
         yield db
-    except Exception as e:
-        logger.error(f"Database session error ({e}). Trying fallback database...")
-        tmp_url = "sqlite:////tmp/facebook_crm.db"
-        fb_eng = create_engine(tmp_url, connect_args={"check_same_thread": False})
-        Base.metadata.create_all(bind=fb_eng)
-        fb_sess = sessionmaker(bind=fb_eng, autocommit=False, autoflush=False)()
-        try:
-            yield fb_sess
-        finally:
-            fb_sess.close()
     finally:
-        try:
-            db.close()
-        except:
-            pass
-
-
+        db.close()
